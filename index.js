@@ -3,8 +3,8 @@ var bodyParser = require('body-parser');
 var request = require('request');
 var app = express();
 
-app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: false}));
 
 app.get('/', function (req, res) {
 	res.send('This is my Facebook Messenger Bot - Bollywood Songs Download Bot Server!');
@@ -19,3 +19,32 @@ app.get('/webhook', function (req, res) {
 });
 
 app.listen((process.env.PORT || 8080));
+
+app.post('/webhook', function (req, res) {
+	var events = req.body.entry[0].messaging;
+		for (i = 0; i < events.length; i++) {
+			var event = events[i];
+			if (event.message && event.message.text) {
+				sendMessage(event.sender.id, {text: "Echo: " + event.message.text});
+			}
+		}
+		res.sendStatus(200);
+});
+
+function sendMessage(recipientId, message) {
+	request({
+		url: 'https://graph.facebook.com/v3.0/me/messages',
+		qs: {access_token: EAAclctZANcaQBADffe22uqQrR4MvfXI9d4ZAPzumiJLE1ZChFGFEc7CmSuDhOxKFCKPjO6GA0HRX0CwRKxcdURAZCS0zPlMHzBWtDZAZC67mdhko0R07ELDlKIsPaizs4EeZCpy8LYXlTXH7Sp4pOVUWYnQXgZBWYwxvWmCUyWDJjplCpvlCECwq},
+		method: 'POST',
+		json: {
+			recipient: {id: recipientId},
+			message: message,
+		}
+	}, function(error, response, body) {
+		if (error) {
+			console.log('Error sending message: ', error);
+		} else if (response.body.error) {
+			console.log('Error: ', response.body.error);
+		}
+	});
+};
