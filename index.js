@@ -33,7 +33,7 @@ app.post('/webhook', function (req, res) {
 
 function sendMessage(recipientId, message) {
 	request({
-		url: 'https://graph.facebook.com/v3.0/me/messages',
+		url: 'https://graph.facebook.com/v2.6/me/messages',
 		qs: {access_token: EAAclctZANcaQBADffe22uqQrR4MvfXI9d4ZAPzumiJLE1ZChFGFEc7CmSuDhOxKFCKPjO6GA0HRX0CwRKxcdURAZCS0zPlMHzBWtDZAZC67mdhko0R07ELDlKIsPaizs4EeZCpy8LYXlTXH7Sp4pOVUWYnQXgZBWYwxvWmCUyWDJjplCpvlCECwq},
 		method: 'POST',
 		json: {
