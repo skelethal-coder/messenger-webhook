@@ -7,7 +7,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
 app.get('/', function (req, res) {
-	res.send('This is my Facebook Messenger Bot - Bollywood Songs Download Bot Server!');
+	res.send('<b>This is my Facebook Messenger Bot - Bollywood Songs Download Bot Server!</b>');
 });
 
 app.get('/webhook', function (req, res) {
