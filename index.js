@@ -47,7 +47,7 @@ function handleMessage(sender_psid, received_message) {
   if (received_message.text) {
     //create the payload for a basic text message
     response = {
-      "text": "${received_message.text}"
+      "text": received_message.text
     }
   }
   //sends the response message
