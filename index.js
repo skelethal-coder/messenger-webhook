@@ -1,61 +1,9 @@
-/*
-var express = require('express');
-var bodyParser = require('body-parser');
-var request = require('request');
-var app = express();
-
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: false}));
-
-app.get('/', function (req, res) {
-	res.send('<b>This is my Facebook Messenger Bot - Bollywood Songs Download Bot Server!</b>');
-});
-
-app.get('/webhook', function (req, res) {
-	if (req.query['hub.verify_token'] === 'bsdb_verify_token') {
-		res.status(200).send(req.query['hub.challenge']);
-	} else {
-		res.status(403).send('Invalid verify token');
-	}
-});
-
-app.listen((process.env.PORT || 8080));
-
-app.post('/webhook', function (req, res) {
-	var events = req.body.entry[0].messaging;
-		for (i = 0; i < events.length; i++) {
-			var event = events[i];
-			if (event.message && event.message.text) {
-				sendMessage(event.sender.id, {text: "Echo: " + event.message.text});
-			}
-		}
-		res.sendStatus(200);
-});
-
-function sendMessage(recipientId, message) {
-	request({
-		url: 'https://graph.facebook.com/v2.6/me/messages',
-		qs: {access_token: EAAclctZANcaQBALvJixZBXLFwO8R7Un8XtvtfDZAH6QKGEGlrNJeX3XXmK9YLbaQpnidV5E9uGk3HyfS77WuUPFZCryHkkFu1En4ZCSQ5b8nnMqCuA1J527JKs1f3vVeMkIMTDc1q6tawJF9QPlOKhS4vItsqz0S35Oq5Dto9QAZDZD},
-		method: 'POST',
-		json: {
-			recipient: {id: recipientId},
-			message: message,
-		}
-	}, function(error, response, body) {
-		if (error) {
-			console.log('Error sending message: ', error);
-		} else if (response.body.error) {
-			console.log('Error: ', response.body.error);
-		}
-	});
-};
-*/
-
 'use strict';
 
 //imports dependencies and sets up http server
 const express = require('express');
 const bodyParser = require('body-parser');
+const request = require('request');
 const app = express().use(bodyParser.json()); //creates express http server
 
 //sets server port and logs message on success
@@ -76,6 +24,13 @@ app.post('/webhook', (req, res) => {
       //get the sender PSID
       let sender_psid = webhook_event.sender.id;
       console.log('Sender PSID: ' + sender_psid);
+      //check whether the event is a message or postback
+      //pass the event to the appropriate handler function
+      if (webhook_event.message) {
+        handleMessage(sender_psid, webhook_event.message);
+      } /*else if (webhook_event.postback) {
+        handlePostback(sender_psid, webhook_event.postback);
+      }*/
     });
     //returns a '200 OK' response to all requests
     res.status(200).send('EVENT_RECEIVED');
@@ -84,6 +39,44 @@ app.post('/webhook', (req, res) => {
     res.sendStatus(404);
   }
 });
+
+//handles message events
+function handleMessage(sender_psid, received_message) {
+  let response;
+  //check whether the message contains text
+  if (received_message.text) {
+    //create the payload for a basic text message
+    response = {
+      "text": ' ${received_message.text} '
+    }
+  }
+  //sends the response message
+  callSendAPI(sender_psid, response);
+}
+
+//sends response messages via the Send API
+function callSendAPI(sender_psid, response) {
+  //construct the message body
+  let request_body = {
+    "recipient": {
+      "id": sender_psid
+    },
+    "message": response
+  }
+  //send the HTTP request to the Messenger Platform
+  request({
+    "uri": "https://graph.facebook.com/v2.6/me/messages",
+    "qs": { "access_token": "EAAclctZANcaQBAHhWxldZCUE0Qut9dXkZC2e1V4FxzFK1b1dDuuB72Dc1IFv6WUNJUtZBSDRYZB8PCfNfLCoPpDaodIpwziijPJOCn7vylZBZBqVapdmZAlgUqWl7m9mn66AZCvMTba4YKo2E7XvgvPaPZApqfwAW3IukZA8Bos3UpbSgZDZD" },
+    "method": "POST",
+    "json": request_body
+  }, (err, res, body) => {
+    if (!err) {
+      console.log('message sent!');
+    } else {
+      console.error("Unable to send message:" + err);
+    }
+  });
+}
 
 //adds support for GET requests to our webhook
 app.get('/webhook', (req, res) => {
